@@ -4,7 +4,8 @@
     > npm start
 
 # RUN React.js Client
-    // TODO: Make client.
+    > npm start
+Navigate to https://localhost:3000
 
 # About
 
