@@ -1,20 +1,23 @@
 var express = require('express');
 var catchError = require('http-errors');
 var router = express.Router();
+const cors = require('cors');
+
 
 var rp = require('request-promise');
+var config = require('../config.mjs');
 
 router.get('/', function(req, res) {
   res.status(200).send(
     "Routes: <ul>\
-    <li>/profile  ::get my GitHub profile.</li>\
+    <li>/profile/:uid&nbsp&nbsp::&nbsp&nbspget GitHub profile with identifier 'uid'</li>\
     </ul>"
   );
 })
 
-router.get('/profile', function(req, res, next) {
+router.get('/profile/:uid', cors(config.corsOptions), function(req, res, next) {
   const options = {
-    url: 'https://api.github.com/users/awallace689',
+    url: 'https://api.github.com/users/' + req.params["uid"],
     headers: {
       'User-Agent': 'request'
     }

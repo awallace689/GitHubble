@@ -1,0 +1,9 @@
+.App {
+  box-sizing: content-box;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-flow: column nowrap;
+
+  font-size: 1.5vw;
+}
