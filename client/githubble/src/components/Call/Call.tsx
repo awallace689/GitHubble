@@ -1,15 +1,15 @@
-import React, { Component, ReactNode } from 'react';
+import React, { Component } from 'react';
 import './Call.css';
 import fetch from 'node-fetch';
 
-import 'react-json-pretty/themes/monikai.css'
+// import 'react-json-pretty/themes/monikai.css'
 import JSONPretty from 'react-json-pretty';
+
 
 interface State {
   complete: boolean;
   response: any;
 }
-
 
 class Call extends Component<object, State> {
   constructor(props: any) {
@@ -27,16 +27,19 @@ class Call extends Component<object, State> {
         complete: true,
         response: json
       }))
+      .catch(() => this.setState({
+        complete: true,
+        response: "Request failed."
+      }))
   }
 
-  render(): ReactNode {
+  render() {
     return (
-      <div className="call">
+      <div className="call rounded">
         {this.state.complete
           ? <JSONPretty data={this.state.response}></JSONPretty>
           : 'Loading...'
         }
-
       </div>
     );
   }

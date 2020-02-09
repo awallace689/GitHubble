@@ -1,7 +1,6 @@
 .call {
-  display: flex;
-  font-size: .8vw;
-  text-align: left;
-  width: 30vw;
-  height: 30vw;
+  overflow-x: hidden;
+  font-size: .8rem;
+  background-color: var(--accentColor);
+  padding: .25rem;
 }

@@ -1,9 +1,17 @@
-.App {
-  box-sizing: content-box;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-flow: column nowrap;
+.app {
+  height: 100%;
+  font-size: 1rem;
+  z-index: 0;
 
-  font-size: 1.5vw;
+  justify-content: center;
+
+  background-color: var(--backgroundColor);
+
+  --backgroundColor: #476299;
+  --accentColor: #bdcfe1;
+  --contentColor: #fff9f2;
+}
+
+.navbar {
+  background-color: var(--accentColor);
 }

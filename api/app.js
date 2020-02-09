@@ -1,15 +1,8 @@
 var createError = require('http-errors');
 var express = require('express');
-var cors = require('cors');
-
+var app = express();
 var githubRouter = require('./routes/github');
 
-var app = express();
-
-const corsOptions = {
-  origin: 'https://localhost:3000',
-  optionsSuccessStatus: 200
-}
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));

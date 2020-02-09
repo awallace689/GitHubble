@@ -1,0 +1,5 @@
+.content {
+  background-color: var(--contentColor);
+  height: 100%;
+  margin-top: 1vw;
+}
