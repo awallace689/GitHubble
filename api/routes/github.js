@@ -44,7 +44,7 @@ router.get('/profile/:uid', cors(environment.corsOptions), function (req, res, n
   }
 });
 
-router.post('/populate', cors(environment.corsOptions), function (req, res, next) {
+router.post('/populate', cors(environment.corsOptions), async function (req, res, next) {
   const rateOptions = {
     url: 'https://api.github.com/rate_limit',
     headers: {
@@ -59,7 +59,13 @@ router.post('/populate', cors(environment.corsOptions), function (req, res, next
     }
   }
 
-  mongo.getAll('Users', res);
+  try {
+    res.status(200).json(await mongo.getAll('Users'));
+  }
+
+  catch (err) {
+    res.status(500).send(err);
+  }
 });
 
 module.exports = router;

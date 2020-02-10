@@ -1,24 +1,15 @@
-var client = require('mongodb').MongoClient;
+var mongoClient = require('mongodb').MongoClient;
 var secret = require('../secrets.mjs').connectString;
 
 
-function getAll(collection, res) {
-  client.connect(secret, function (err, dbInstance) {
-    if (err) {
-      throw err;
-    }
-    else {
-      const dbObject = dbInstance.db('GitHubble');
-      const dbCollection = dbObject.collection(collection);
+async function getAll(collection) {
+  let client = await mongoClient.connect(secret, { useUnifiedTopology: true });
+  let connection = client.db('GitHubble')
+    .collection(collection);
+  let result = await connection.find().toArray();
 
-      dbCollection.find().toArray((error, result) => {
-        if (error) {
-          throw error;
-        }
-        res.status(200).json(result);
-      });
-    }
-  });
+  client.close();
+  return result;
 }
 
-module.exports =  { getAll };
+module.exports = { getAll };
