@@ -4,6 +4,7 @@ var environment = require('../environment.mjs');
 var catchError = require('http-errors');
 var rp = require('request-promise');
 var lookup = require('../services/userLookupService.mjs');
+var mongo = require('../services/mongoService.mjs');
 var moment = require('moment');
 
 
@@ -38,10 +39,27 @@ router.get('/profile/:uid', cors(environment.corsOptions), function (req, res, n
       })
       .catch(() => next(catchError(500, `Request failed at ${options.url}.`)));
   }
-
   else {
     res.status(200).json(uTable[uid].data);
   }
+});
+
+router.post('/populate', cors(environment.corsOptions), function (req, res, next) {
+  const rateOptions = {
+    url: 'https://api.github.com/rate_limit',
+    headers: {
+      'User-Agent': 'placeholder'
+    }
+  };
+
+  const usersOptions = {
+    url: 'https://api.github.com/users/' + req.params["uid"],
+    headers: {
+      'User-Agent': 'placeholder'
+    }
+  }
+
+  mongo.getAll('Users', res);
 });
 
 module.exports = router;
