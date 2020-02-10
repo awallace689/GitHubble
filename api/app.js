@@ -1,13 +1,13 @@
 var createError = require('http-errors');
 var express = require('express');
 var app = express();
-var githubRouter = require('./routes/github');
+var githubRouter = require('./routes/gitHubble');
 
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// controller routef prefixes
+// controller route prefixes
 app.use('/', githubRouter);
 
 // catch 404 and forward to error handler

@@ -13,7 +13,7 @@ var router = express.Router();
 router.get('/', function (req, res) {
   res.status(200).send(
     "Routes: <ul>\
-    <li>/profile/:uid&nbsp&nbsp::&nbsp&nbspgetGitHub profile with identifier 'uid'</li>\
+    <li>/profile/:uid&nbsp&nbsp::&nbsp&nbspget GitHub profile with identifier 'uid'</li>\
     </ul>"
   );
 })
@@ -44,24 +44,50 @@ router.get('/profile/:uid', cors(environment.corsOptions), function (req, res, n
   }
 });
 
-router.post('/populate', cors(environment.corsOptions), function (req, res, next) {
-  const rateOptions = {
-    url: 'https://api.github.com/rate_limit',
-    headers: {
-      'User-Agent': 'placeholder'
-    }
-  };
-
-  const usersOptions = {
-    url: 'https://api.github.com/users/' + req.params["uid"],
-    headers: {
-      'User-Agent': 'placeholder'
-    }
-  }
-
+router.get('/getUsers', cors(environment.corsOptions), function (req, res, next) {
   mongo.getAll('Users')
     .then(result => res.status(200).json(result))
     .catch(err => res.status(500).send(err));
 });
+
+router.post('/populate', cors(environment.corsOptions), async function (req, res, next) {
+  const allUsersOptions = {
+    url: 'https://api.github.com/users',
+    headers: {
+      'User-Agent': 'placeholder'
+    },
+    qs: {
+      'since': 21960822
+    }
+  }
+  try {
+    let resp = await rateLimitGuard(allUsersOptions, res);
+    res.status(200).json(JSON.parse(resp));
+  }
+  catch (err) {
+    console.log(err);
+    res.status(500).send();
+  }
+});
+
+async function rateLimitGuard(options, res) {
+  const rateOptions = {
+    url: 'https://api.github.com/rate_limit',
+    headers: {
+      'User-Agent': 'placeholder'
+    },
+  };
+  let remaining = null;
+  let resp = await rp(rateOptions);
+
+  remaining = JSON.parse(resp).resources.core.remaining;
+  console.log(remaining);
+  if (remaining > 0) {
+    return await rp(options);
+  }
+  else {
+    res.status(403).json({ message: "Rate limit exceeded." });
+  }
+}
 
 module.exports = router;

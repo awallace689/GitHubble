@@ -12,4 +12,39 @@ async function getAll(collection) {
   return result;
 }
 
-module.exports = { getAll };
+async function getOne(collection, identifier) {
+  let client = await mongoClient.connect(secret, { useUnifiedTopology: true });
+  let connection = client.db('GitHubble')
+    .collection(collection);
+  let result = await connection.findOne(identifier).toArray();
+
+  client.close()
+  return result;
+}
+
+async function insertOne(collection, document) {
+  let client = await mongoClient.connect(secret, { useUnifiedTopology: true });
+  let connection = client.db('GitHubble')
+    .collection(collection);
+  let result = await connection.insertOne(document);
+
+  client.close();
+  return result;
+}
+
+async function insertMany(collection, documentArr) {
+  let client = await mongoClient.connect(secret, { useUnifiedTopology: true });
+  let connection = client.db('GitHubble')
+    .collection(collection);
+  let result = await connection.insertMany(documentArr);
+
+  client.close();
+  return result;
+}
+
+module.exports = { 
+  getAll, 
+  getOne, 
+  insertOne, 
+  insertMany 
+};
