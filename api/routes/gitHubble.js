@@ -6,6 +6,7 @@ var rp = require('request-promise');
 var lookup = require('../services/userLookupService.mjs');
 var mongo = require('../services/mongoService.mjs');
 var moment = require('moment');
+var parseLink = require('parse-link-header');
 
 
 var router = express.Router();
@@ -50,19 +51,33 @@ router.get('/getUsers', cors(environment.corsOptions), function (req, res, next)
     .catch(err => res.status(500).send(err));
 });
 
-router.post('/populate', cors(environment.corsOptions), async function (req, res, next) {
+router.post('/populate/:id', cors(environment.corsOptions), async function (req, res, next) {
+  async function usersRequest(options) {
+    let response = await rp(options);
+    return {
+      link: parseLink(response.headers.link),
+      body: JSON.parse(response.body)
+    };
+  };
   const allUsersOptions = {
     url: 'https://api.github.com/users',
     headers: {
       'User-Agent': 'placeholder'
     },
     qs: {
-      'since': 21960822
-    }
-  }
+      'since': req.params['id']
+    },
+    resolveWithFullResponse: true
+  };
+  let resp = null;
+
   try {
-    let resp = await rateLimitGuard(allUsersOptions, res);
-    res.status(200).json(JSON.parse(resp));
+    if (!resp) {
+      resp = await rateLimitGuard(allUsersOptions, res, usersRequest);
+      // allUsersOptions.qs.since = resp.link.next.since;
+      // mongo.insertMany('Users', resp.body);
+    }
+    res.status(200).send(resp);
   }
   catch (err) {
     console.log(err);
@@ -70,7 +85,7 @@ router.post('/populate', cors(environment.corsOptions), async function (req, res
   }
 });
 
-async function rateLimitGuard(options, res) {
+async function rateLimitGuard(options, res, func = undefined, notify=false) {
   const rateOptions = {
     url: 'https://api.github.com/rate_limit',
     headers: {
@@ -81,12 +96,19 @@ async function rateLimitGuard(options, res) {
   let resp = await rp(rateOptions);
 
   remaining = JSON.parse(resp).resources.core.remaining;
-  console.log(remaining);
+  console.log("Remaining: ", remaining - 1);
   if (remaining > 0) {
-    return await rp(options);
+    if (func) {
+      return await func(options);
+    }
+    else {
+      return await rp(options);
+    }
   }
   else {
-    res.status(403).json({ message: "Rate limit exceeded." });
+    if (notify) {
+      res.status(403).json({ message: "Rate limit exceeded." });
+    }
   }
 }
 
