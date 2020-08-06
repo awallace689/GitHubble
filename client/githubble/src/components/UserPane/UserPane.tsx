@@ -5,9 +5,10 @@ import InfoPanel from '../Call/InfoPanel';
 import fetch from 'node-fetch'
 
 interface UserPaneState {
-  username: string,
   gotUser: boolean,
-  response: any
+  response: any,
+  requestMade: boolean,
+  username: string
 }
 
 
@@ -21,11 +22,12 @@ class UserPane extends Component<object, UserPaneState> {
     this.state = {
       username: "awallace689",
       gotUser: false,
-      response: undefined
+      response: undefined,
+      requestMade: false
     };
 
-    this.updateUsername = this.updateUsername.bind(this);
     this.getUser = this.getUser.bind(this);
+    this.updateUsername = this.updateUsername.bind(this);
     this.userInputSubmit = this.userInputSubmit.bind(this);
   }
 
@@ -48,26 +50,21 @@ class UserPane extends Component<object, UserPaneState> {
             </Button>
           </InputGroup.Append>
         </InputGroup>
-        <InfoPanel 
-          username={this.state.username}
-          loading={!this.state.gotUser}
-          info={this.state.response}
-          errorMsg={this.errorMsg}
-        />
+        {this.state.requestMade
+          ? <InfoPanel 
+              username={this.state.username}
+              loading={!this.state.gotUser}
+              info={this.state.response}
+              errorMsg={this.errorMsg}
+            />
+          : null
+        }
       </>
     );
   }
 
-  updateUsername(e: React.ChangeEvent<HTMLInputElement>) {
-    this.setState({ username: e.target.value })
-  }
-
-  userInputSubmit(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
-    this.setState({ gotUser: false })
-    this.getUser(this.state.username);
-  }
-
   getUser(username: string): void {
+    this.setState({ requestMade: true });
     fetch('http://localhost:8000/profile/' + username)
       .then(resp => resp.json())
       .then(json => this.setState({
@@ -79,6 +76,16 @@ class UserPane extends Component<object, UserPaneState> {
         response: this.errorMsg
       }));
   }
+  
+  updateUsername(e: React.ChangeEvent<HTMLInputElement>) {
+    this.setState({ username: e.target.value })
+  }
+
+  userInputSubmit(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
+    this.setState({ gotUser: false });
+    this.getUser(this.state.username);
+  }
 }
+  
 
 export default UserPane;
