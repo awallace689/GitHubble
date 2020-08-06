@@ -22,7 +22,6 @@ router.get('/', function (req, res) {
 router.get('/profile/:uid', cors(environment.corsOptions), function (req, res, next) {
   let uTable = lookup.UserLookupTable.getInstance().table;
   let uid = req.params["uid"];
-
   if (!uTable.hasOwnProperty(uid)
     || uTable[uid].timestamp.diff(moment(), 'minutes') > 60) {
     const options = {
@@ -32,23 +31,30 @@ router.get('/profile/:uid', cors(environment.corsOptions), function (req, res, n
       }
     };
 
-    rp(options)
-      .then(resp => {
-        let jsonResponse = JSON.parse(resp);
-        uTable[uid] = new lookup.UserInfo(jsonResponse);
-        res.status(200).json(jsonResponse);
-      })
-      .catch(() => next(catchError(500, `Request failed at ${options.url}.`)));
+    request = () => {
+      rp(options)
+        .then(resp => {
+          let jsonResponse = JSON.parse(resp);
+          uTable[uid] = new lookup.UserInfo(jsonResponse);
+          res.status(200).json(jsonResponse);
+        })
+        .catch(() => next(catchError(500, `Request failed at ${options.url}.`)));
+    }
+    rateLimitGuard(options, res, func=request)
   }
   else {
     res.status(200).json(uTable[uid].data);
   }
 });
 
-router.get('/getUsers', cors(environment.corsOptions), function (req, res, next) {
-  mongo.getAll('Users')
-    .then(result => res.status(200).json(result))
-    .catch(err => res.status(500).send(err));
+router.get('/Users', cors(environment.corsOptions), async function (req, res, next) {
+  try {
+    result = await mongo.getAll('Users');
+    res.status(200).json(result);
+  }
+  catch (err) {
+    res.status(500).send(err)
+  }
 });
 
 router.post('/populate/:id', cors(environment.corsOptions), async function (req, res, next) {
@@ -59,7 +65,8 @@ router.post('/populate/:id', cors(environment.corsOptions), async function (req,
       body: JSON.parse(response.body)
     };
   };
-  const allUsersOptions = {
+
+  let allUsersOptions = {
     url: 'https://api.github.com/users',
     headers: {
       'User-Agent': 'placeholder'
@@ -69,33 +76,36 @@ router.post('/populate/:id', cors(environment.corsOptions), async function (req,
     },
     resolveWithFullResponse: true
   };
-  let resp = null;
 
   try {
-    if (!resp) {
-      resp = await rateLimitGuard(allUsersOptions, res, usersRequest);
-      // allUsersOptions.qs.since = resp.link.next.since;
-      // mongo.insertMany('Users', resp.body);
+    let github_resp = await rateLimitGuard(allUsersOptions, res, func = usersRequest);
+    let count = 1;
+    while (github_resp.status != 429 && count < 30) {
+      await mongo.insertMany('Users', github_resp.body);
+
+      console.log(allUsersOptions.qs.since)
+      allUsersOptions.qs.since = parseInt(allUsersOptions.qs.since) + 30;
+      github_resp = await rateLimitGuard(allUsersOptions, res, func = usersRequest);
+      count++;
     }
-    res.status(200).send(resp);
   }
   catch (err) {
-    console.log(err);
-    res.status(500).send();
+    res.status(500).send(err.message);
   }
+  res.status(200).send();
 });
 
-async function rateLimitGuard(options, res, func = undefined, notify=false) {
+
+async function rateLimitGuard(options, res, func = undefined) {
   const rateOptions = {
     url: 'https://api.github.com/rate_limit',
     headers: {
       'User-Agent': 'placeholder'
     },
   };
-  let remaining = null;
-  let resp = await rp(rateOptions);
 
-  remaining = JSON.parse(resp).resources.core.remaining;
+  let resp = await rp(rateOptions);
+  let remaining = JSON.parse(resp).resources.core.remaining;
   console.log("Remaining: ", remaining - 1);
   if (remaining > 0) {
     if (func) {
@@ -106,9 +116,7 @@ async function rateLimitGuard(options, res, func = undefined, notify=false) {
     }
   }
   else {
-    if (notify) {
-      res.status(403).json({ message: "Rate limit exceeded." });
-    }
+    res.status(429).json({ message: "GitHub API rate limit exceeded." });
   }
 }
 
