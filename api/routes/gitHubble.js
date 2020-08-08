@@ -3,7 +3,6 @@ var cors = require('cors');
 var environment = require('../environment.mjs');
 var catchError = require('http-errors');
 var rp = require('request-promise');
-var fetch = require('node-fetch')
 var lookup = require('../services/CacheService.mjs');
 var mongo = require('../services/mongoService.mjs');
 var moment = require('moment');
@@ -24,10 +23,10 @@ router.get('/', function (req, res) {
 
 
 router.get('/profile/:uid', cors(environment.corsOptions), function (req, res, next) {
-  let uTable = lookup.cache.getInstance().table;
-  let uid = req.params["uid"];
-  if (!uTable.hasOwnProperty(uid)
-    || uTable[uid].timestamp.diff(moment(), 'minutes') > 60) {
+  const uTable = lookup.Cache.getInstance().table;
+  const uid = req.params["uid"];
+  const cached = uTable.hasOwnProperty(uid) && uTable[uid].timestamp.diff(moment(), 'minutes') < 60;
+  if (!cached) {
     const options = {
       url: 'https://api.github.com/users/' + req.params["uid"],
       headers: {
@@ -44,7 +43,7 @@ router.get('/profile/:uid', cors(environment.corsOptions), function (req, res, n
         })
         .catch(() => next(catchError(500, `Request failed at ${options.url}.`)));
     }
-    rateLimitGuard(options, res, func = request)
+    rateLimitGuard(options, res, func = request);
   }
   else {
     res.status(200).json(uTable[uid].data);
@@ -54,11 +53,11 @@ router.get('/profile/:uid', cors(environment.corsOptions), function (req, res, n
 
 router.get('/infopanel/:uid', cors(environment.corsOptions), async function (req, res, next) {
   try {
-    let respJson = await ggqlRequest(Queries.infoPanel, true,  req.params["uid"])
-    res.status(200).json(respJson)
+    let respJson = await ggqlRequest(Queries.infoPanel(login=req.params["uid"]));
+    res.status(200).json(respJson);
   }
   catch (err) {
-    res.status(500).json(err.message)
+    res.status(500).json(err.message);
   }
 });
 
@@ -99,10 +98,9 @@ router.post('/populate/:id', cors(environment.corsOptions), async function (req,
     let count = 1;
     while (github_resp.status != 429 && count < 30) {
       await mongo.insertMany('Users', github_resp.body);
-
-      console.log(allUsersOptions.qs.since)
       allUsersOptions.qs.since = parseInt(allUsersOptions.qs.since) + 30;
       github_resp = await rateLimitGuard(allUsersOptions, res, func = usersRequest);
+      
       count++;
     }
   }

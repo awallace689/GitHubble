@@ -1,31 +1,18 @@
 var token = require('../secrets.mjs').githubToken
 var fetch = require('node-fetch')
-var CacheService = require('../services/CacheService.mjs')
+var queryCache = require('../services/CacheService.mjs')
 var moment = require('moment');
 
 /**
  * Send a request to GitHub GraphQL API v4.
  * @async
 
- * @param {string} query: GraphQL query string or function returning query string.
- * @param {bool} cacheRequest : Should requests' response be cached?
+ * @param {string} query: GraphQL query string.
+ * @param {bool} enableCache=true: Should requests' response be cached?
  * @param {number} cacheTimeout=60: Time in minutes before invalidating cached item.
- * @param {any[]} params: parameters to apply to 'query' function.
  */
-async function ggqlRequest(query, cacheRequest, cacheTimeout=60, ...params) {
-  let cache = CacheService.Cache.getInstance()
-  if (query === undefined) {
-    throw TypeError("'query' is undefined.");
-  }
-
-  let finalQuery;
-  if (params) {
-    finalQuery = query(...params);
-  }
-  else {
-    finalQuery = query;
-  }
-
+async function ggqlRequest(query, enableCache = true, cacheTimeout = 60) {
+  const cache = queryCache.Cache.getInstance();
   const gitHubGraphqlOptions = {
     method: 'POST',
     headers: {
@@ -33,24 +20,28 @@ async function ggqlRequest(query, cacheRequest, cacheTimeout=60, ...params) {
       'Content-Type': 'application/json',
       'Authorization': `bearer ${token}`
     },
-    body: JSON.stringify({ "query": finalQuery })
+    body: JSON.stringify({ "query": query })
   };
 
-  let cached = cacheRequest 
-    && cache.hasOwnProperty(finalQuery) 
-    && cache[finalQuery].cache_timestamp.diff(moment(), 'minutes') < cacheTimeout
+  if (query === undefined) {
+    throw TypeError("'query' is undefined.");
+  }
 
-  if (cacheRequest && cached) {
-    return cache[finalQuery];
+  let cached = enableCache
+    && cache.hasOwnProperty(query)
+    && cache[query].cache_timestamp.diff(moment(), 'minutes') < cacheTimeout
+
+  if (enableCache && cached) {
+    return cache[query];
   }
 
   let resp = await fetch('https://api.github.com/graphql', gitHubGraphqlOptions);
   resp = await resp.json();
 
   if (!resp["errors"]) {
-    if (cacheRequest) {
+    if (enableCache) {
       resp["cache_timestamp"] = moment();
-      cache[finalQuery] = resp;
+      cache[query] = resp;
     }
 
     return resp;
@@ -64,12 +55,24 @@ async function ggqlRequest(query, cacheRequest, cacheTimeout=60, ...params) {
 // QUERIES
 
 
-const InfoPanel = function (login) {
+const InfoPanel = function (login = undefined) {
   const query = `
     { 
       user(login: "${login}") {
         name
         login
+        repositories(last: 30) {
+          nodes {
+            name
+            languages(last: 10) {
+              nodes {
+                name
+                color
+              }
+            }
+          }
+          totalCount
+        }
       }
       rateLimit {
         limit

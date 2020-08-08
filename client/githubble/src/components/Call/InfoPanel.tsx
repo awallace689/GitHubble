@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
-import './Call.css';
-import fetch from 'node-fetch';
+import './InfoPanel.css';
 
 // import 'react-json-pretty/themes/monikai.css'
 import JSONPretty from 'react-json-pretty';
