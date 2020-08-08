@@ -1,7 +1,12 @@
 .app {
   height: 100%;
+  width: 100%;
   font-size: 1rem;
   z-index: 0;
+  position: fixed;
+  overflow-y: scroll;
+
+  /* padding-bottom: 1vw; */
 
   justify-content: center;
 
@@ -13,5 +18,7 @@
 }
 
 .navbar {
+  width: 100%;
   background-color: var(--accentColor);
+  position: sticky;
 }
