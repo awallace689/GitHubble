@@ -3,7 +3,7 @@ var moment = require('moment');
 
 let instance = null
 
-class UserInfo
+class Insert
 {
   constructor(data) {
     this.data = data;
@@ -13,7 +13,7 @@ class UserInfo
 
 // Singleton implementation from:
 // https://blog.logrocket.com/design-patterns-in-node-js/
-class UserLookupTable {
+class Cache {
 
     constructor() {
      this.table = {};
@@ -21,11 +21,11 @@ class UserLookupTable {
 
     static getInstance() {
      if(!instance) {
-         instance = new UserLookupTable();
+         instance = new Cache();
      }
 
      return instance;
     }
 }
 
-module.exports = { UserLookupTable, UserInfo };
+module.exports = { Cache, Insert };

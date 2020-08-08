@@ -3,13 +3,16 @@ var cors = require('cors');
 var environment = require('../environment.mjs');
 var catchError = require('http-errors');
 var rp = require('request-promise');
-var lookup = require('../services/userLookupService.mjs');
+var fetch = require('node-fetch')
+var lookup = require('../services/CacheService.mjs');
 var mongo = require('../services/mongoService.mjs');
 var moment = require('moment');
 var parseLink = require('parse-link-header');
+var { Queries, ggqlRequest } = require('../services/githubGraphql.mjs')
 
-
+ 
 var router = express.Router();
+
 
 router.get('/', function (req, res) {
   res.status(200).send(
@@ -19,8 +22,9 @@ router.get('/', function (req, res) {
   );
 })
 
+
 router.get('/profile/:uid', cors(environment.corsOptions), function (req, res, next) {
-  let uTable = lookup.UserLookupTable.getInstance().table;
+  let uTable = lookup.cache.getInstance().table;
   let uid = req.params["uid"];
   if (!uTable.hasOwnProperty(uid)
     || uTable[uid].timestamp.diff(moment(), 'minutes') > 60) {
@@ -35,17 +39,29 @@ router.get('/profile/:uid', cors(environment.corsOptions), function (req, res, n
       rp(options)
         .then(resp => {
           let jsonResponse = JSON.parse(resp);
-          uTable[uid] = new lookup.UserInfo(jsonResponse);
+          uTable[uid] = new lookup.Insert(jsonResponse);
           res.status(200).json(jsonResponse);
         })
         .catch(() => next(catchError(500, `Request failed at ${options.url}.`)));
     }
-    rateLimitGuard(options, res, func=request)
+    rateLimitGuard(options, res, func = request)
   }
   else {
     res.status(200).json(uTable[uid].data);
   }
 });
+
+
+router.get('/infopanel/:uid', cors(environment.corsOptions), async function (req, res, next) {
+  try {
+    let respJson = await ggqlRequest(Queries.infoPanel, true,  req.params["uid"])
+    res.status(200).json(respJson)
+  }
+  catch (err) {
+    res.status(500).json(err.message)
+  }
+});
+
 
 router.get('/Users', cors(environment.corsOptions), async function (req, res, next) {
   try {
@@ -56,6 +72,7 @@ router.get('/Users', cors(environment.corsOptions), async function (req, res, ne
     res.status(500).send(err)
   }
 });
+
 
 router.post('/populate/:id', cors(environment.corsOptions), async function (req, res, next) {
   async function usersRequest(options) {
