@@ -63,13 +63,37 @@ const InfoPanel = function (login = undefined) {
         login
         repositories(last: 30) {
           nodes {
-            name
+            createdAt
+            pushedAt
+            description
+            isEmpty
+            openGraphImageUrl
             languages(last: 10) {
               nodes {
                 name
                 color
               }
             }
+            name
+            object(expression: "master") {
+              ... on Commit {
+                history(first: 3) {
+                  totalCount
+                  nodes {
+                    abbreviatedOid
+                    authoredDate
+                    additions
+                    author {
+                      name
+                    }
+                    deletions
+                    message
+                  }
+                }
+              }
+            }
+            pushedAt
+            url
           }
           totalCount
         }

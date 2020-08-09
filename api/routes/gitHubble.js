@@ -57,7 +57,7 @@ router.get('/infopanel/:uid', cors(environment.corsOptions), async function (req
     res.status(200).json(respJson);
   }
   catch (err) {
-    res.status(500).json(err.message);
+    res.status(500).json(JSON.parse(err.message));
   }
 });
 
