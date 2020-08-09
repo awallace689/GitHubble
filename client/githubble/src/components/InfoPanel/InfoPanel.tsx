@@ -24,7 +24,7 @@ class InfoPanel extends Component<InfoPanelProps, InfoPanelState> {
   render() {
     let elem = this.props.info === this.props.errorMsg
       ? <i style={{ color: 'Red' }}>{this.props.errorMsg}</i>
-      : <JSONPretty className="call" data={this.props.info}></JSONPretty>
+      : <JSONPretty className="call rounded mt-1 mb-1" data={this.props.info}></JSONPretty>
     
     return (
       <div className="rounded">

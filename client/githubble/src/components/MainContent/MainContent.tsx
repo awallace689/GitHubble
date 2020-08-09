@@ -6,7 +6,7 @@ class MainContent extends Component<object, any> {
   render() {
     return (
       <Col xs="12" lg="8">
-        <Col className="content rounded">
+        <Col className="content rounded shadow-lg">
           {this.props.children}
         </Col>
       </Col>

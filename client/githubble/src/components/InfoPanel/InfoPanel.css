@@ -1,0 +1,19 @@
+.call {
+  font-size: .8rem;
+  background-color: var(--accentColor);
+  /* padding: .25rem; */
+  width: 100%;
+}
+
+pre.__json-pretty__ {
+  padding: .25rem;
+  overflow-x: auto;
+  overflow-y: auto;
+  min-height: 300px;
+  max-height: 30vw;
+  overflow-wrap: normal;
+}
+
+pre.span {
+  overflow-wrap: normal
+}

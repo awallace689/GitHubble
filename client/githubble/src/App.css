@@ -4,7 +4,6 @@
   font-size: 1rem;
   z-index: 0;
   position: fixed;
-  overflow-y: scroll;
 
   /* padding-bottom: 1vw; */
 
@@ -17,8 +16,19 @@
   --contentColor: #fff9f2;
 }
 
-.navbar {
+.page-navbar {
   width: 100%;
   background-color: var(--accentColor);
-  position: sticky;
+  z-index: 99;
+}
+
+.scroll-me {
+  overflow-y: auto;
+  margin-top: 72px;
+  padding: 1vw;
+  height: calc(100% - 72px);
+}
+
+.indent-p p {
+  margin-left: .5vw;
 }

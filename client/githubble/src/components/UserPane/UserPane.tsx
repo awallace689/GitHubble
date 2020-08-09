@@ -1,7 +1,7 @@
 import React, { Component, ChangeEvent } from 'react';
 import './UserPane.css';
 import { Col, Row, Navbar, Button, InputGroup, FormControl } from 'react-bootstrap';
-import InfoPanel from '../Call/InfoPanel';
+import InfoPanel from '../InfoPanel/InfoPanel';
 import fetch from 'node-fetch'
 
 interface UserPaneState {
@@ -18,7 +18,7 @@ class UserPane extends Component<object, UserPaneState> {
 
   constructor(props: object) {
     super(props);
-    
+
     this.state = {
       username: "awallace689",
       gotUser: false,
@@ -43,7 +43,7 @@ class UserPane extends Component<object, UserPaneState> {
             onChange={this.updateUsername}
           />
           <InputGroup.Append>
-            <Button 
+            <Button
               variant="outline-secondary"
               onClick={this.userInputSubmit}>
               Get
@@ -51,14 +51,15 @@ class UserPane extends Component<object, UserPaneState> {
           </InputGroup.Append>
         </InputGroup>
         {this.state.requestMade
-          ? <InfoPanel 
+          ? <div className="mt-2">
+            <InfoPanel
               username={this.state.username}
               loading={!this.state.gotUser}
               info={this.state.response}
               errorMsg={this.errorMsg}
             />
-          : null
-        }
+          </div>
+          : null}
       </>
     );
   }
@@ -76,7 +77,7 @@ class UserPane extends Component<object, UserPaneState> {
         response: this.errorMsg
       }));
   }
-  
+
   updateUsername(e: React.ChangeEvent<HTMLInputElement>) {
     this.setState({ username: e.target.value })
   }
@@ -86,6 +87,6 @@ class UserPane extends Component<object, UserPaneState> {
     this.getUser(this.state.username);
   }
 }
-  
+
 
 export default UserPane;
