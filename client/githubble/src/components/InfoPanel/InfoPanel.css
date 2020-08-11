@@ -1,6 +1,6 @@
 .call {
   font-size: .8rem;
-  background-color: var(--accentColor);
+  background-color: var(--accentTwoColor);
   /* padding: .25rem; */
   width: 100%;
 }

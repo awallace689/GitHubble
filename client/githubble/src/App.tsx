@@ -1,78 +1,113 @@
 import React, { Component } from 'react';
-import ReactDOM from 'react-dom';
 import {
   BrowserRouter as Router,
   Switch,
   Route,
-  Link
+  Redirect,
 } from "react-router-dom";
-import { Col, Row, Navbar, Button, InputGroup, FormControl, Jumbotron } from 'react-bootstrap';
+import { Col, Row } from 'react-bootstrap';
+import fetch from 'node-fetch';
+
+import { client_id as clientId } from './secrets.js';
+import Login from './components/Login/Login';
 import UserPane from './components/UserPane/UserPane';
 import Page from './components/Page/Page';
-import { client_id } from './secrets.js';
-
 import './App.css';
+import NavigationBar from './components/NavigationBar/NavigationBar';
 
 
 interface AppState {
-  loggedIn: boolean
+  githubAuthHeader: { Authorization: string } | null,
 }
 
 
 class App extends Component<object, AppState> {
-  oauth_url = `https://github.com/login/oauth/authorize?client_id=${client_id}`
+  oauthUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}`
 
   constructor(props: object) {
     super(props);
 
     this.state = {
-      loggedIn: false
+      githubAuthHeader: null
     };
+
+    this.getOAuthToken = this.getOAuthToken.bind(this);
+    this.signOut = this.signOut.bind(this);
+  }
+
+  componentDidMount() {
+    let token = localStorage.getItem('github_oauth');
+    if (token) {
+      this.setState({ githubAuthHeader: { 'Authorization': `token ${token}` } });
+    }
+  }
+
+  async getOAuthToken() {
+    const queryParams = new URLSearchParams(new URL(window.location.href).search);
+    const tokenCode = queryParams.get('code');
+    if (queryParams.get('code') && !this.state.githubAuthHeader) {
+      const result = await fetch(
+        `http://localhost:8000/api/github/${tokenCode}`,
+        { method: 'POST' }
+      );
+
+      const token = await result.text();
+      localStorage.setItem('github_oauth', token);
+      this.setState({ githubAuthHeader: { 'Authorization': `token ${token}` } })
+    }
+  }
+
+  signOut() {
+    localStorage.clear();
+    this.setState({
+      githubAuthHeader: null
+    })
   }
 
   render() {
+    const signedInSwitch =
+      <Switch>
+        <Route path="/compare">
+          <Page>
+            <Row>
+              <Col xs={6}>
+                <UserPane />
+              </Col>
+              <Col xs={6}>
+                <UserPane />
+              </Col>
+            </Row>
+          </Page>
+        </Route>
+        <Route path='/login'>
+          <Redirect to="/compare" />
+        </Route>
+        <Route path="/">
+          <Redirect to="/login" />
+        </Route>
+      </Switch>
+    const signedOutSwitch =
+      <Switch>
+        <Route path='/login'>
+          <Login
+            oauthUrl={this.oauthUrl}
+            getOAuthToken={this.getOAuthToken} />
+        </Route>
+        <Route path='/'>
+          <Redirect to='/login' />
+        </Route>
+      </Switch>
+
     return (
       <div className="app">
         <Router>
-          <Navbar className="page-navbar position-fixed shadow w-100">
-            <img
-              style={{ background: '#fff9f2' }}
-              src="favicon.png"
-              alt="Telescope logo"
-              width="50"
-              height="50" />
-            <h1 className="ml-3">
-              <b>GitHubble</b>
-            </h1>
-            <a className="ml-auto" href={this.oauth_url}>
-              <Button className="position-relative">Sign in</Button>
-            </a>
-          </Navbar>
-          <Switch>
-            <Route path="/compare">
-              <Page>
-                <Row>
-                  <Col xs={6}>
-                    <UserPane />
-                  </Col>
-                  <Col xs={6}>
-                    <UserPane />
-                  </Col>
-                </Row>
-              </Page>
-            </Route>
-            <Route path="/">
-              <Page>
-                <Jumbotron>
-                  <h1>Welcome to <b>GitHubble!</b></h1>
-                  <br />
-                  <h3><a href={this.oauth_url}>Connect</a> to <a href="https://github.com">GitHub</a> begin.</h3>
-                </Jumbotron>
-                  <hr />
-                  <p><i>Connecting will redirect you GitHub's secure sign-in page. Upon connecting, you will be able to access the rest of the website!</i></p>
-              </Page>
-            </Route>
-          </Switch>
+          <NavigationBar
+            signedIn={!!this.state.githubAuthHeader}
+            signOut={this.signOut}
+            oauthUrl={this.oauthUrl} />
+          {this.state.githubAuthHeader
+            ? signedInSwitch
+            : signedOutSwitch}
         </Router>
       </div>
     );

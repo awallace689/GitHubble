@@ -66,7 +66,7 @@ class UserPane extends Component<object, UserPaneState> {
 
   getUser(username: string): void {
     this.setState({ requestMade: true });
-    fetch('http://localhost:8000/infopanel/' + username)
+    fetch('http://localhost:8000/api/github/infopanel/' + username)
       .then(resp => resp.json())
       .then(json => this.setState({
         gotUser: true,
