@@ -7,9 +7,10 @@ var lookup = require('../services/CacheService.mjs');
 var mongo = require('../services/mongoService.mjs');
 var moment = require('moment');
 var parseLink = require('parse-link-header');
-var { Queries, ggqlRequest } = require('../services/githubGraphql.mjs')
+var fetch = require('node-fetch');
+var { Queries, ggqlRequest } = require('../services/githubGraphql.mjs');
+var { client_id, client_secret } = require('../secrets.mjs');
 
- 
 var router = express.Router();
 
 
@@ -51,13 +52,32 @@ router.get('/profile/:uid', cors(environment.corsOptions), function (req, res, n
 });
 
 
-router.get('/infopanel/:uid', cors(environment.corsOptions), async function (req, res, next) {
+router.get('/github/infopanel/:uid', cors(environment.corsOptions), async function (req, res, next) {
   try {
-    let respJson = await ggqlRequest(Queries.infoPanel(login=req.params["uid"]));
+    let respJson = await ggqlRequest(Queries.infoPanel(login = req.params["uid"]));
     res.status(200).json(respJson);
   }
   catch (err) {
     res.status(500).json(JSON.parse(err.message));
+  }
+});
+
+
+router.post('/github/:code', cors(environment.corsOptions), async function (req, res, next) {
+  const tokenCode = req.params['code'];
+  try {
+    let result = await fetch(
+      `https://github.com/login/oauth/access_token?client_id=${client_id}&client_secret=${client_secret}&code=${tokenCode}`,
+      { method: 'POST' }
+    );
+
+    let body = await result.text();
+    let access_token_var = body.split('&')[0];
+    let token = access_token_var.split('=')[1];
+    res.status(200).send(token);
+  }
+  catch (err) {
+    res.status(400).send(err.message);
   }
 });
 
@@ -100,7 +120,7 @@ router.post('/populate/:id', cors(environment.corsOptions), async function (req,
       await mongo.insertMany('Users', github_resp.body);
       allUsersOptions.qs.since = parseInt(allUsersOptions.qs.since) + 30;
       github_resp = await rateLimitGuard(allUsersOptions, res, func = usersRequest);
-      
+
       count++;
     }
   }

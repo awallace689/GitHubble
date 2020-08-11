@@ -8,7 +8,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 // controller route prefixes
-app.use('/', githubRouter);
+app.use('/api', githubRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
