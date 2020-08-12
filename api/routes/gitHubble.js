@@ -11,6 +11,7 @@ var fetch = require('node-fetch');
 var { Queries, ggqlRequest } = require('../services/githubGraphql.mjs');
 var { client_id, client_secret } = require('../secrets.mjs');
 
+
 var router = express.Router();
 
 
@@ -52,13 +53,15 @@ router.get('/profile/:uid', cors(environment.corsOptions), function (req, res, n
 });
 
 
-router.get('/github/infopanel/:uid', cors(environment.corsOptions), async function (req, res, next) {
+router.post('/github/infopanel/:uid', cors(environment.corsOptions), async function (req, res, next) {
   try {
-    let respJson = await ggqlRequest(Queries.infoPanel(login = req.params["uid"]));
+    const token = req.body.token;
+
+    let respJson = await ggqlRequest(Queries.infoPanel(login = req.params["uid"]), token);
     res.status(200).json(respJson);
   }
   catch (err) {
-    res.status(500).json(JSON.parse(err.message));
+    res.status(500).send(err.message);
   }
 });
 
@@ -88,7 +91,7 @@ router.get('/Users', cors(environment.corsOptions), async function (req, res, ne
     res.status(200).json(result);
   }
   catch (err) {
-    res.status(500).send(err)
+    res.status(500).send(err);
   }
 });
 

@@ -2,11 +2,13 @@ var createError = require('http-errors');
 var express = require('express');
 var app = express();
 var githubRouter = require('./routes/gitHubble');
-
+var environment = require('./environment.mjs');
+var cors = require('cors')
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+app.options('*', cors(environment.corsOptions))
 // controller route prefixes
 app.use('/api', githubRouter);
 

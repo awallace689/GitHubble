@@ -11,7 +11,7 @@ var moment = require('moment');
  * @param {bool} enableCache=true: Should requests' response be cached?
  * @param {number} cacheTimeout=60: Time in minutes before invalidating cached item.
  */
-async function ggqlRequest(query, enableCache = true, cacheTimeout = 60) {
+async function ggqlRequest(query, token, enableCache = true, cacheTimeout = 60) {
   const cache = queryCache.Cache.getInstance();
   const gitHubGraphqlOptions = {
     method: 'POST',
@@ -23,12 +23,15 @@ async function ggqlRequest(query, enableCache = true, cacheTimeout = 60) {
     body: JSON.stringify({ "query": query })
   };
 
-  if (query === undefined) {
+  if (query == undefined) {
     throw TypeError("'query' is undefined.");
   }
 
-  let cached = enableCache
-    && cache.hasOwnProperty(query)
+  if (token == undefined) {
+    throw TypeError("'token' is undefined.")
+  }
+
+  let cached = cache.hasOwnProperty(query)
     && cache[query].cache_timestamp.diff(moment(), 'minutes') < cacheTimeout
 
   if (enableCache && cached) {

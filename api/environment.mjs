@@ -1,6 +1,6 @@
-const corsOption = {
-  origin: 'https://localhost.com/3000',
+const corsOptions = {
+  origin: 'http://localhost:3000',
   optionsSuccessStatus: 200
 };
 
-module.export = corsOption;
+module.exports = { corsOptions };
