@@ -10,7 +10,7 @@ pre.__json-pretty__ {
   overflow-x: auto;
   overflow-y: auto;
   min-height: 300px;
-  max-height: 30vw;
+  max-height: 75vh;
   overflow-wrap: normal;
 }
 
