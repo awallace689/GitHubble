@@ -17,7 +17,7 @@ import NavigationBar from './components/NavigationBar/NavigationBar';
 
 
 interface AppState {
-  githubAuthHeader: { Authorization: string } | null,
+  token: string
 }
 
 
@@ -28,7 +28,7 @@ class App extends Component<object, AppState> {
     super(props);
 
     this.state = {
-      githubAuthHeader: null
+      token: ""
     };
 
     this.getOAuthToken = this.getOAuthToken.bind(this);
@@ -38,14 +38,14 @@ class App extends Component<object, AppState> {
   componentDidMount() {
     let token = localStorage.getItem('github_oauth');
     if (token) {
-      this.setState({ githubAuthHeader: { 'Authorization': `token ${token}` } });
+      this.setState({ token: token });
     }
   }
 
   async getOAuthToken() {
     const queryParams = new URLSearchParams(new URL(window.location.href).search);
     const tokenCode = queryParams.get('code');
-    if (queryParams.get('code') && !this.state.githubAuthHeader) {
+    if (queryParams.get('code') && !this.state.token) {
       const result = await fetch(
         `http://localhost:8000/api/github/${tokenCode}`,
         { method: 'POST' }
@@ -53,14 +53,14 @@ class App extends Component<object, AppState> {
 
       const token = await result.text();
       localStorage.setItem('github_oauth', token);
-      this.setState({ githubAuthHeader: { 'Authorization': `token ${token}` } })
+      this.setState({ token: token })
     }
   }
 
   signOut() {
     localStorage.clear();
     this.setState({
-      githubAuthHeader: null
+      token: ""
     })
   }
 
@@ -71,10 +71,10 @@ class App extends Component<object, AppState> {
           <Page>
             <Row>
               <Col xs={6}>
-                <UserPane />
+                <UserPane token={this.state.token} />
               </Col>
               <Col xs={6}>
-                <UserPane />
+                <UserPane token={this.state.token} />
               </Col>
             </Row>
           </Page>
@@ -102,10 +102,10 @@ class App extends Component<object, AppState> {
       <div className="app">
         <Router>
           <NavigationBar
-            signedIn={!!this.state.githubAuthHeader}
+            signedIn={!!this.state.token}
             signOut={this.signOut}
             oauthUrl={this.oauthUrl} />
-          {this.state.githubAuthHeader
+          {this.state.token
             ? signedInSwitch
             : signedOutSwitch}
         </Router>

@@ -4,6 +4,7 @@ import { Col, Row, Navbar, Button, InputGroup, FormControl } from 'react-bootstr
 import InfoPanel from '../InfoPanel/InfoPanel';
 import fetch from 'node-fetch'
 
+
 interface UserPaneState {
   gotUser: boolean,
   response: any,
@@ -12,11 +13,16 @@ interface UserPaneState {
 }
 
 
-class UserPane extends Component<object, UserPaneState> {
+interface UserPaneProps {
+  token: string
+}
+
+
+class UserPane extends Component<UserPaneProps, UserPaneState> {
   errorMsg = "Error fetching user."
   loadingMsg = "Loading..."
 
-  constructor(props: object) {
+  constructor(props: UserPaneProps) {
     super(props);
 
     this.state = {
@@ -66,16 +72,28 @@ class UserPane extends Component<object, UserPaneState> {
 
   getUser(username: string): void {
     this.setState({ requestMade: true });
-    fetch('http://localhost:8000/api/github/infopanel/' + username)
+    fetch(
+      'http://localhost:8000/api/github/infopanel/' + username,
+      {
+        method: 'POST',
+        body: JSON.stringify({ token: this.props.token }),
+        headers: {
+          'Content-Type': 'application/json'
+        } 
+      }
+    )
       .then(resp => resp.json())
       .then(json => this.setState({
         gotUser: true,
         response: json
       }))
-      .catch(() => this.setState({
-        gotUser: true,
-        response: this.errorMsg
-      }));
+      .catch((err) => {
+        console.log(err); 
+        this.setState({
+          gotUser: true,
+          response: this.errorMsg
+        })
+      });
   }
 
   updateUsername(e: React.ChangeEvent<HTMLInputElement>) {
