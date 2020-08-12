@@ -5,8 +5,7 @@ var moment = require('moment');
 
 /**
  * Send a request to GitHub GraphQL API v4.
- * @async
-
+ * 
  * @param {string} query: GraphQL query string.
  * @param {bool} enableCache=true: Should requests' response be cached?
  * @param {number} cacheTimeout=60: Time in minutes before invalidating cached item.
@@ -60,44 +59,12 @@ async function ggqlRequest(query, token, enableCache = true, cacheTimeout = 60) 
 
 const InfoPanel = function (login = undefined) {
   const query = `
-    { 
+    query { 
       user(login: "${login}") {
         name
         login
         repositories(last: 30) {
-          nodes {
-            createdAt
-            pushedAt
-            description
-            isEmpty
-            openGraphImageUrl
-            languages(last: 10) {
-              nodes {
-                name
-                color
-              }
-            }
-            name
-            object(expression: "master") {
-              ... on Commit {
-                history(first: 3) {
-                  totalCount
-                  nodes {
-                    abbreviatedOid
-                    authoredDate
-                    additions
-                    author {
-                      name
-                    }
-                    deletions
-                    message
-                  }
-                }
-              }
-            }
-            pushedAt
-            url
-          }
+          ...repoInfoFragment
           totalCount
         }
       }
@@ -108,6 +75,8 @@ const InfoPanel = function (login = undefined) {
         resetAt
       }
     }
+
+    ${repoInfoFragment}
   `;
 
   return query;
@@ -115,6 +84,59 @@ const InfoPanel = function (login = undefined) {
 
 
 // END QUERIES
+
+
+// FRAGMENTS
+
+
+// Deps: None
+const commitInfoFragment = `
+  fragment branchCommitInfoFragment on Commit {
+    history(first: 3) {
+      totalCount
+      nodes {
+        abbreviatedOid
+        authoredDate
+        additions
+        author {
+          name
+        }
+        deletions
+        message
+      }
+    }
+  }
+`
+
+
+const repoInfoFragment = `
+  fragment repoInfoFragment on RepositoryConnection {
+    nodes {
+      createdAt
+      pushedAt
+      description
+      isEmpty
+      openGraphImageUrl
+      languages(last: 10) {
+        nodes {
+          name
+          color
+        }
+      }
+      name
+      object(expression: "master") {
+        ...branchCommitInfoFragment
+      }
+      pushedAt
+      url
+    }
+  }
+
+  ${commitInfoFragment}
+`
+
+
+// END FRAGMENTS
 
 
 const Queries = {
