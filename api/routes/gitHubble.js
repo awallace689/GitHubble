@@ -21,7 +21,7 @@ router.get('/', function (req, res) {
     <li>/profile/:uid&nbsp&nbsp::&nbsp&nbspget GitHub profile with identifier 'uid'</li>\
     </ul>"
   );
-})
+});
 
 
 router.get('/profile/:uid', cors(environment.corsOptions), function (req, res, next) {

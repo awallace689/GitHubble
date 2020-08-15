@@ -1,4 +1,3 @@
-var token = require('../secrets.mjs').githubToken
 var fetch = require('node-fetch')
 var queryCache = require('../services/CacheService.mjs')
 var moment = require('moment');
@@ -49,7 +48,7 @@ async function ggqlRequest(query, token, enableCache = true, cacheTimeout = 60) 
     return resp;
   }
   else {
-    throw Error(JSON.stringify(resp));
+    throw new Error("Error parsing GraphQL query.");
   }
 };
 
@@ -61,10 +60,25 @@ const InfoPanel = function (login = undefined) {
   const query = `
     query { 
       user(login: "${login}") {
-        name
+        avatarUrl
+        bio
+        followers {
+          totalCount
+        }
         login
+        name
+        pullRequests(last: 1) {
+          totalCount
+        }
         repositories(last: 30) {
           ...repoInfoFragment
+          totalCount
+        }
+        repositoriesContributedTo(last: 1) {
+          totalCount
+        }
+        url
+        watching(last: 1) {
           totalCount
         }
       }
@@ -106,7 +120,7 @@ const commitInfoFragment = `
       }
     }
   }
-`
+`;
 
 
 const repoInfoFragment = `
@@ -133,7 +147,7 @@ const repoInfoFragment = `
   }
 
   ${commitInfoFragment}
-`
+`;
 
 
 // END FRAGMENTS
