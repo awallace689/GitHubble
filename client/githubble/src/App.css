@@ -13,8 +13,9 @@
 
   --backgroundColor: #476299;
   --accentColor: #bdcfe1;
-  --accentTwoColor: #e9ecef;
+  --accentTwoColor: #d3e8fd8a;
   --contentColor: #fff9f2;
+  --bootstrapGray: rgba(0,0,0,.03);
 }
 
 .page-navbar {

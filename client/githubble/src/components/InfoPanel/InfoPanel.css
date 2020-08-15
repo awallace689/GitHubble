@@ -1,19 +1,16 @@
-.call {
-  font-size: .8rem;
-  background-color: var(--accentTwoColor);
-  /* padding: .25rem; */
-  width: 100%;
+.profile-img {
+  min-width: 90px;
+  min-height: 90px;
+  width: 8vw;
+  height: 8vw;
 }
 
-pre.__json-pretty__ {
-  padding: .25rem;
-  overflow-x: auto;
-  overflow-y: auto;
-  min-height: 300px;
-  max-height: 75vh;
-  overflow-wrap: normal;
+.accent-two-background {
+  background-color: var(--accentTwoColor) !important;
 }
 
-pre.span {
-  overflow-wrap: normal
+@media (min-width: 576px) { 
+  .separating-line {
+    border-right: 1px solid #dee2e6 !important;
+  }
 }

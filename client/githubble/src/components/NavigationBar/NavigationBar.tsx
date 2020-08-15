@@ -19,7 +19,7 @@ class NavigationBar extends Component<NavigationBarProps, NavigationBarState> {
     return (
       <Navbar className="page-navbar position-fixed shadow w-100">
         <img
-          className="rounded-circle"
+          className="rounded"
           style={{ background: '#476299' }}
           src="favicon.png"
           alt="Telescope logo"

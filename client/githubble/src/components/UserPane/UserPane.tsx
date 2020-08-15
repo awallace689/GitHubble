@@ -9,6 +9,7 @@ interface UserPaneState {
   gotUser: boolean,
   response: any,
   requestMade: boolean,
+  error: boolean,
   username: string
 }
 
@@ -19,8 +20,8 @@ interface UserPaneProps {
 
 
 class UserPane extends Component<UserPaneProps, UserPaneState> {
-  errorMsg = "Error fetching user."
-  loadingMsg = "Loading..."
+  errorMsg = "Error fetching user.";
+  loadingMsg = "Loading...";
 
   constructor(props: UserPaneProps) {
     super(props);
@@ -29,12 +30,35 @@ class UserPane extends Component<UserPaneProps, UserPaneState> {
       username: "awallace689",
       gotUser: false,
       response: undefined,
+      error: false,
       requestMade: false
     };
 
     this.getUser = this.getUser.bind(this);
     this.updateUsername = this.updateUsername.bind(this);
     this.userInputSubmit = this.userInputSubmit.bind(this);
+  }
+
+  getUser(username: string): void {
+    this.setState({ requestMade: true, error: false, gotUser: false, response: undefined });
+    fetch(
+      'http://localhost:8000/api/github/infopanel/' + username,
+      {
+        method: 'POST',
+        body: JSON.stringify({ token: this.props.token }),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+    )
+      .then(resp => {
+        if (resp.status !== 200) {
+          throw new Error("Request failed.")
+        }
+        return resp.json()
+      })
+      .then(json => this.setState({ response: json.data, gotUser: true }))
+      .catch((err) => this.setState({ requestMade: false, error: true, gotUser: false }));
   }
 
   render() {
@@ -56,48 +80,25 @@ class UserPane extends Component<UserPaneProps, UserPaneState> {
             </Button>
           </InputGroup.Append>
         </InputGroup>
-        {this.state.requestMade
+        {this.state.response && !this.state.error
           ? <div className="mt-2">
             <InfoPanel
-              username={this.state.username}
-              loading={!this.state.gotUser}
-              info={this.state.response}
-              errorMsg={this.errorMsg}
+              data={this.state.response}
             />
           </div>
+          : null}
+        {this.state.error
+          ? <i style={{ color: 'red' }}>{this.errorMsg}</i>
+          : null}
+        {this.state.requestMade && !this.state.gotUser
+          ? <i>{this.loadingMsg}</i>
           : null}
       </>
     );
   }
 
-  getUser(username: string): void {
-    this.setState({ requestMade: true });
-    fetch(
-      'http://localhost:8000/api/github/infopanel/' + username,
-      {
-        method: 'POST',
-        body: JSON.stringify({ token: this.props.token }),
-        headers: {
-          'Content-Type': 'application/json'
-        } 
-      }
-    )
-      .then(resp => resp.json())
-      .then(json => this.setState({
-        gotUser: true,
-        response: json
-      }))
-      .catch((err) => {
-        console.log(err); 
-        this.setState({
-          gotUser: true,
-          response: this.errorMsg
-        })
-      });
-  }
-
   updateUsername(e: React.ChangeEvent<HTMLInputElement>) {
-    this.setState({ username: e.target.value })
+    this.setState({ username: e.target.value });
   }
 
   userInputSubmit(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {

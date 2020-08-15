@@ -70,10 +70,7 @@ class App extends Component<object, AppState> {
         <Route path="/compare">
           <Page>
             <Row>
-              <Col xs={6}>
-                <UserPane token={this.state.token} />
-              </Col>
-              <Col xs={6}>
+              <Col>
                 <UserPane token={this.state.token} />
               </Col>
             </Row>
