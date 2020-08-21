@@ -6,9 +6,9 @@ class CenterPanel extends Component<object, any> {
   render() {
     return (
       <Row>
-        <Col xs="2"></Col>
+        <Col xs={2}></Col>
         {this.props.children}
-        <Col xs="2"></Col>
+        <Col xs={2}></Col>
       </Row>
     );
   }

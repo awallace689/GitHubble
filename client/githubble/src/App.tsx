@@ -10,14 +10,14 @@ import fetch from 'node-fetch';
 
 import { client_id as clientId } from './secrets.js';
 import Login from './components/Login/Login';
-import UserPane from './components/UserPane/UserPane';
+import UserPage from './components/UserPage/UserPage';
 import Page from './components/Page/Page';
 import './App.css';
 import NavigationBar from './components/NavigationBar/NavigationBar';
 
 
 interface AppState {
-  token: string
+  token: string,
 }
 
 
@@ -28,7 +28,7 @@ class App extends Component<object, AppState> {
     super(props);
 
     this.state = {
-      token: ""
+      token: "",
     };
 
     this.getOAuthToken = this.getOAuthToken.bind(this);
@@ -67,17 +67,17 @@ class App extends Component<object, AppState> {
   render() {
     const signedInSwitch =
       <Switch>
-        <Route path="/compare">
+        <Route path="/user">
           <Page>
             <Row>
               <Col>
-                <UserPane token={this.state.token} />
+                <UserPage token={this.state.token} />
               </Col>
             </Row>
           </Page>
         </Route>
         <Route path='/login'>
-          <Redirect to="/compare" />
+          <Redirect to="/user" />
         </Route>
         <Route path="/">
           <Redirect to="/login" />

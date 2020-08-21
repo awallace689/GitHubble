@@ -1,11 +1,11 @@
 import React, { Component, ChangeEvent } from 'react';
-import './UserPane.css';
+import './UserPage.css';
 import { Col, Row, Navbar, Button, InputGroup, FormControl } from 'react-bootstrap';
 import InfoPanel from '../InfoPanel/InfoPanel';
 import fetch from 'node-fetch'
 
 
-interface UserPaneState {
+interface UserPageState {
   gotUser: boolean,
   response: any,
   requestMade: boolean,
@@ -14,20 +14,20 @@ interface UserPaneState {
 }
 
 
-interface UserPaneProps {
+interface UserPageProps {
   token: string
 }
 
 
-class UserPane extends Component<UserPaneProps, UserPaneState> {
+class UserPage extends Component<UserPageProps, UserPageState> {
   errorMsg = "Error fetching user.";
   loadingMsg = "Loading...";
 
-  constructor(props: UserPaneProps) {
+  constructor(props: UserPageProps) {
     super(props);
 
     this.state = {
-      username: "awallace689",
+      username: "",
       gotUser: false,
       response: undefined,
       error: false,
@@ -37,6 +37,24 @@ class UserPane extends Component<UserPaneProps, UserPaneState> {
     this.getUser = this.getUser.bind(this);
     this.updateUsername = this.updateUsername.bind(this);
     this.userInputSubmit = this.userInputSubmit.bind(this);
+  }
+
+  async componentDidMount() {
+    if (!this.state.username) {
+      let response = await fetch(
+        'http://localhost:8000/api/github/user',
+        {
+          method: 'POST',
+          body: JSON.stringify({ token: this.props.token }),
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      let responseData = await response.json();
+      this.setState({ username: responseData.data.viewer.name }, () => this.forceUpdate());
+    }
   }
 
   getUser(username: string): void {
@@ -73,11 +91,17 @@ class UserPane extends Component<UserPaneProps, UserPaneState> {
             onChange={this.updateUsername}
           />
           <InputGroup.Append>
-            <Button
-              variant="outline-secondary"
-              onClick={this.userInputSubmit}>
-              Get
-            </Button>
+            {!this.state.username
+              ? <Button
+                variant="outline-secondary"
+                disabled>
+                Get
+                </Button>
+              : <Button
+                variant="outline-secondary"
+                onClick={this.userInputSubmit}>
+                Get
+                </Button>}
           </InputGroup.Append>
         </InputGroup>
         {this.state.response && !this.state.error
@@ -108,4 +132,4 @@ class UserPane extends Component<UserPaneProps, UserPaneState> {
 }
 
 
-export default UserPane;
+export default UserPage;

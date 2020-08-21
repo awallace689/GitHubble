@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
-import { Col, Button, Accordion, Card, Row } from 'react-bootstrap';
+import { Col, Button, Accordion, Card, Row, ListGroup } from 'react-bootstrap';
+import UserPanel from '../UserPanel/UserPanel';
+import moment from 'moment';
 import './InfoPanel.css';
 
 
@@ -12,53 +14,64 @@ interface InfoPanelProps {
 
 
 class InfoPanel extends Component<InfoPanelProps, InfoPanelState> {
+  momentFormatString = "MMMM Do YYYY"
+
   render() {
     console.log(this.props.data)
-    /*
-    * avatarUrl
-    * Name
-    * url
-    * Bio
-    * pullRequests.totalCount
-    * repositories.totalCount
-    * watching.totalCount
-    */
-    const header = (
-      <Card>
-        <Card.Body className="w-100 h-100">
-          <Row>
-            <Col xs={12} sm={4} className="separating-line">
-              <Row>
-                <img
-                  src={this.props.data.user.avatarUrl}
-                  alt="profile"
-                  className="profile-img" />
-                <a className="align-self-center m-3" href={this.props.data.user.url}>
-                  <h4 >{this.props.data.user.name}</h4>
-                </a>
-                {this.props.data.user.bio
-                  ? <p className="rounded mt-3 mr-3 p-2 accent-two-background">
-                    {this.props.data.user.bio}
-                  </p>
-                  : null}
-              </Row>
-            </Col>
-            <Col xs={12} sm={4} className="separating-line">
 
-            </Col>
-          </Row>
-        </Card.Body>
-      </Card>
+    /*
+     * createdAt
+     * pushedAt
+     * description
+     * isEmpty
+     * languages.nodes[].name
+     * languages.nodes[].color
+     * name
+     * url
+     * object.history.totalCount
+     * object.history.nodes[..2].abbreviatedOid
+     * object.history.nodes[].authoredDate
+     * object.history.nodes[].deletions
+     * object.history.nodes[].additions
+     * object.history.nodes[].message
+     */
+    const repos = (
+      <ListGroup>
+        {this.props.data.user.repositories.nodes.map((repo: any, i: number) => {
+          return (
+            <>
+              <Row className='repo-body' key={i}>
+                <Col xs={12} sm={6}>
+                  <a href={repo.url}>
+                    <h3>{repo.name}</h3>
+                  </a>
+                  {repo.description ? <h6 className="accent-two-background rounded p-1">{repo.description}</h6> : null}
+                  <h6><b>Created: </b>{moment(repo.createdAt).format(this.momentFormatString)}</h6>
+                  <h6><b>Last Updated: </b>{moment(repo.pushedAt).format(this.momentFormatString)}</h6>
+                </Col>
+                <Col xs={12} sm={3}></Col>
+                <Col xs={12} sm={3}></Col>
+              </Row>
+              <Row><Col>{i == this.props.data.user.repositories.nodes.length - 1 ? null : <hr />}</Col></Row>
+            </>
+          );
+        })}
+      </ListGroup>
     );
 
     const accordionContents = [
       { title: "Statistics", body: <Card.Body>Text1</Card.Body> },
-      { title: "Projects", body: <Card.Body>Text2</Card.Body> }
+      {
+        title: "Projects", body:
+          <Card.Body>
+            {repos}
+          </Card.Body>
+      }
     ];
 
     return (
       <>
-        {header}
+        <UserPanel data={this.props.data} />
         <Accordion>
           {accordionContents.map((item: { title: string, body: JSX.Element }, i) => {
             const key = i.toString();

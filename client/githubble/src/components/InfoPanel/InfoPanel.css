@@ -9,8 +9,31 @@
   background-color: var(--accentTwoColor) !important;
 }
 
+.mt-username {
+  margin-top: .5rem;
+}
+
 @media (min-width: 576px) { 
   .separating-line {
     border-right: 1px solid #dee2e6 !important;
   }
+}
+
+@media(max-width: 575px) {
+  .separating-line {
+    border-bottom: 1px solid #dee2e6 !important;
+  }
+
+  .header-stats {
+    padding-left: 10px;
+  }
+}
+
+.header-stats {
+  height: calc(100% - 1.75rem) !important;
+  display: flex;
+}
+
+.repo-body h6 {
+  font-size: .8rem;
 }
