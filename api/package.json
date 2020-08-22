@@ -11,12 +11,12 @@
     "debug": "~2.6.9",
     "express": "~4.16.1",
     "jade": "~1.11.0",
-    "moment": "^2.24.0",
-    "mongodb": "^3.5.2",
+    "moment": "^2.27.0",
+    "mongodb": "^3.6.0",
     "node-fetch": "^2.6.0",
-    "nodemon": "^2.0.2",
+    "nodemon": "^2.0.4",
     "parse-link-header": "^1.0.1",
-    "request": "^2.88.0",
-    "request-promise": "^4.2.5"
+    "request": "^2.88.2",
+    "request-promise": "^4.2.6"
   }
 }

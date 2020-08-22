@@ -7,7 +7,7 @@ class CenterPanel extends Component<object, any> {
     return (
       <Row>
         <Col xs={2}></Col>
-        {this.props.children}
+          {this.props.children}
         <Col xs={2}></Col>
       </Row>
     );

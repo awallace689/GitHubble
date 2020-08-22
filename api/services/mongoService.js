@@ -1,5 +1,5 @@
 var mongoClient = require('mongodb').MongoClient;
-var secret = require('../secrets.mjs').connectString;
+var secret = require('../secrets.js').connectString;
 
 
 const dbName = 'GitHubble';

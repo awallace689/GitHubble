@@ -75,7 +75,7 @@ class UserPage extends Component<UserPageProps, UserPageState> {
         }
         return resp.json()
       })
-      .then(json => this.setState({ response: json.data, gotUser: true }))
+      .then(json => {this.setState({ response: json.data, gotUser: true })})
       .catch((err) => this.setState({ requestMade: false, error: true, gotUser: false }));
   }
 

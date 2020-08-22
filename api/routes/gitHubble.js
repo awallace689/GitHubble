@@ -1,15 +1,15 @@
 var express = require('express');
 var cors = require('cors');
-var environment = require('../environment.mjs');
+var environment = require('../environment.js');
 var catchError = require('http-errors');
 var rp = require('request-promise');
-var lookup = require('../services/CacheService.mjs');
-var mongo = require('../services/mongoService.mjs');
+var lookup = require('../services/CacheService.js');
+var mongo = require('../services/mongoService.js');
 var moment = require('moment');
 var parseLink = require('parse-link-header');
 var fetch = require('node-fetch');
-var { Queries, ggqlRequest } = require('../services/githubGraphql.mjs');
-var { client_id, client_secret } = require('../secrets.mjs');
+var { Queries, ggqlRequest } = require('../services/githubGraphql.js');
+var { client_id, client_secret } = require('../secrets.js');
 
 
 var router = express.Router();
@@ -21,6 +21,32 @@ router.get('/', function (req, res) {
     <li>/profile/:uid&nbsp&nbsp::&nbsp&nbspget GitHub profile with identifier 'uid'</li>\
     </ul>"
   );
+});
+
+
+router.post('/github/user', cors(environment.corsOptions), async function (req, res, next) {
+  try {
+    const token = req.body.token;
+    
+    let respJson = await ggqlRequest(Queries.loginQuery, token);
+    res.status(200).json(respJson);
+  }
+  catch (err) {
+    res.status(500).send(err.message);
+  }
+});
+
+
+router.post('/github/infopanel/:uid', cors(environment.corsOptions), async function (req, res, next) {
+  try {
+    const token = req.body.token;
+
+    let respJson = await ggqlRequest(Queries.infoPanel(login = req.params["uid"]), token);
+    res.status(200).json(respJson);
+  }
+  catch (err) {
+    res.status(500).send(err.message);
+  }
 });
 
 
@@ -49,19 +75,6 @@ router.get('/profile/:uid', cors(environment.corsOptions), function (req, res, n
   }
   else {
     res.status(200).json(uTable[uid].data);
-  }
-});
-
-
-router.post('/github/infopanel/:uid', cors(environment.corsOptions), async function (req, res, next) {
-  try {
-    const token = req.body.token;
-
-    let respJson = await ggqlRequest(Queries.infoPanel(login = req.params["uid"]), token);
-    res.status(200).json(respJson);
-  }
-  catch (err) {
-    res.status(500).send(err.message);
   }
 });
 

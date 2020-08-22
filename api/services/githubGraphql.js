@@ -1,5 +1,5 @@
 var fetch = require('node-fetch')
-var queryCache = require('../services/CacheService.mjs')
+var queryCache = require('../services/CacheService.js')
 var moment = require('moment');
 
 /**
@@ -62,7 +62,10 @@ const InfoPanel = function (login = undefined) {
       user(login: "${login}") {
         avatarUrl
         bio
-        followers {
+        followers(last: 1) {
+          totalCount
+        }
+        following(last: 1) {
           totalCount
         }
         login
@@ -95,6 +98,14 @@ const InfoPanel = function (login = undefined) {
 
   return query;
 };
+
+const LoginQuery = `
+  query { 
+    viewer { 
+      login
+    }
+  }
+`;
 
 
 // END QUERIES
@@ -155,6 +166,7 @@ const repoInfoFragment = `
 
 const Queries = {
   infoPanel: InfoPanel,
+  loginQuery: LoginQuery
 };
 
 

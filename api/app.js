@@ -2,7 +2,7 @@ var createError = require('http-errors');
 var express = require('express');
 var app = express();
 var githubRouter = require('./routes/gitHubble');
-var environment = require('./environment.mjs');
+var environment = require('./environment.js');
 var cors = require('cors')
 
 app.use(express.json());
