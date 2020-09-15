@@ -38,7 +38,7 @@ async function insertMany(collection, documentArr) {
   let client = await mongoClient.connect(secret, { useUnifiedTopology: true });
   let connection = client.db(dbName)
     .collection(collection);
-  let result = await connection.insertMany(documentArr);
+  let result = await connection.insertMany(documentArr, { forceServerObjectId: true });
 
   client.close();
   return result;

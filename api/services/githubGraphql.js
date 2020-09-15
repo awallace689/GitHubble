@@ -48,12 +48,51 @@ async function ggqlRequest(query, token, enableCache = true, cacheTimeout = 60) 
     return resp;
   }
   else {
+    console.log(resp['errors']);
     throw new Error("Error parsing GraphQL query.");
   }
 };
 
 
 // QUERIES
+
+
+const DatabasePopulateQuery = function (username) {
+  const query = `
+    query {
+      user(login: "${username}") {
+        avatarUrl
+        bio
+        followers(last: 1) {
+          totalCount
+        }
+        following(last: 1) {
+          totalCount
+        }
+        login
+        name
+        pullRequests(last: 1) {
+          totalCount
+        }
+        repositories(last: 30) {
+          ...repoInfoFragment
+          totalCount
+        }
+        repositoriesContributedTo(last: 1) {
+          totalCount
+        }
+        url
+        watching(last: 1) {
+          totalCount
+        }
+      }
+    }
+
+    ${repoInfoFragment}
+  `;
+
+  return query;
+}
 
 
 const InfoPanel = function (login = undefined) {
@@ -165,8 +204,9 @@ const repoInfoFragment = `
 
 
 const Queries = {
+  databasePopulateQuery: DatabasePopulateQuery,
   infoPanel: InfoPanel,
-  loginQuery: LoginQuery
+  loginQuery: LoginQuery,
 };
 
 

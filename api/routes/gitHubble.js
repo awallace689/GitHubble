@@ -9,7 +9,7 @@ var moment = require('moment');
 var parseLink = require('parse-link-header');
 var fetch = require('node-fetch');
 var { Queries, ggqlRequest } = require('../services/githubGraphql.js');
-var { client_id, client_secret } = require('../secrets.js');
+var { client_id, client_secret, githubToken } = require('../secrets.js');
 
 
 var router = express.Router();
@@ -50,35 +50,6 @@ router.post('/github/infopanel/:uid', cors(environment.corsOptions), async funct
 });
 
 
-router.get('/profile/:uid', cors(environment.corsOptions), function (req, res, next) {
-  const uTable = lookup.Cache.getInstance().table;
-  const uid = req.params["uid"];
-  const cached = uTable.hasOwnProperty(uid) && uTable[uid].timestamp.diff(moment(), 'minutes') < 60;
-  if (!cached) {
-    const options = {
-      url: 'https://api.github.com/users/' + req.params["uid"],
-      headers: {
-        'User-Agent': 'placeholder'
-      }
-    };
-
-    request = () => {
-      rp(options)
-        .then(resp => {
-          let jsonResponse = JSON.parse(resp);
-          uTable[uid] = new lookup.Insert(jsonResponse);
-          res.status(200).json(jsonResponse);
-        })
-        .catch(() => next(catchError(500, `Request failed at ${options.url}.`)));
-    }
-    rateLimitGuard(options, res, func = request);
-  }
-  else {
-    res.status(200).json(uTable[uid].data);
-  }
-});
-
-
 router.post('/github/:code', cors(environment.corsOptions), async function (req, res, next) {
   const tokenCode = req.params['code'];
   try {
@@ -100,7 +71,7 @@ router.post('/github/:code', cors(environment.corsOptions), async function (req,
 
 router.get('/Users', cors(environment.corsOptions), async function (req, res, next) {
   try {
-    result = await mongo.getAll('Users');
+    result = await mongo.getAll('UsersGQL');
     res.status(200).json(result);
   }
   catch (err) {
@@ -109,40 +80,28 @@ router.get('/Users', cors(environment.corsOptions), async function (req, res, ne
 });
 
 
-router.post('/populate/:id', cors(environment.corsOptions), async function (req, res, next) {
-  async function usersRequest(options) {
-    let response = await rp(options);
-    return {
-      link: parseLink(response.headers.link),
-      body: JSON.parse(response.body)
-    };
-  };
-
-  let allUsersOptions = {
-    url: 'https://api.github.com/users',
-    headers: {
-      'User-Agent': 'placeholder'
-    },
-    qs: {
-      'since': req.params['id']
-    },
-    resolveWithFullResponse: true
-  };
-
-  try {
-    let github_resp = await rateLimitGuard(allUsersOptions, res, func = usersRequest);
-    let count = 1;
-    while (github_resp.status != 429 && count < 30) {
-      await mongo.insertMany('Users', github_resp.body);
-      allUsersOptions.qs.since = parseInt(allUsersOptions.qs.since) + 30;
-      github_resp = await rateLimitGuard(allUsersOptions, res, func = usersRequest);
-
-      count++;
+router.post('/transform', cors(environment.corsOptions), async function (req, res, next) {
+  let gqlUsersList = [];
+  let usersList = await mongo.getAll('Users');
+  console.log(usersList.length)
+  let i = 0;
+  while (i < usersList.length) {
+    let gqlUser;
+    try {
+      gqlUser = await ggqlRequest(Queries.infoPanel(usersList[i].login), githubToken);
+      if (i == 869) {
+        console.log(gqlUser.data.user)
+      }
+      gqlUsersList.push(gqlUser.data.user);
+      console.log(i, gqlUser.data.user.login);
     }
+    catch (error) {
+      console.log(error)
+    }
+    i++;
   }
-  catch (err) {
-    res.status(500).send(err.message);
-  }
+
+  await mongo.insertMany('UsersGQL', gqlUsersList);
   res.status(200).send();
 });
 
