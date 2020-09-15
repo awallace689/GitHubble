@@ -1,0 +1,51 @@
+.title {
+  margin-left: 1vw;
+  position: relative;
+  top: 3px;
+}
+
+.nav-link-styled {
+  color: black;
+}
+
+.page-navbar {
+  width: 100%;
+  background-color: var(--accentColor);
+  z-index: 99;
+}
+
+@media(min-width: 576px) {
+  .sign-btn {
+    padding: 10px;
+    background-color: var(--backgroundColor);
+    color: white;
+    border-radius: .25rem !important;
+  }
+
+  .sign-btn:hover {
+    cursor: pointer;
+  }
+}
+@media(max-width: 575px) {
+  .nav-link-styled {
+    display: block;
+    margin-top: 15px;
+    margin-left: unset !important;
+  }
+
+  .sign-btn {
+    color: unset;
+    color: black;
+    display: block;
+    margin-top: 14px;
+    margin-left: 0px;
+  }
+
+  .sign-btn:hover {
+    color: unset;
+    color: #0056b3;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+}
+

@@ -61,16 +61,18 @@ class InfoPanel extends Component<InfoPanelProps, InfoPanelState> {
       <ListGroup>
         {this.props.data.user.repositories.nodes.map((repo: any, i: number) => {
           return (
-            <>
-              <Row className='repo-body' key={i}>
+            <div key={i}>
+              <Row className='repo-body'>
                 <Col xs={12} sm={6}>
                   <a href={repo.url}>
                     <h3>{repo.name}</h3>
                   </a>
                   {repo.description ? <h6 className="accent-two-background rounded p-1">{repo.description}</h6> : null}
                   <Row style={{ paddingLeft: '12px' }} className="w-100">
-                    {repo.languages.nodes.map((lang: { name: string, color: string }) => (
-                      <h6 className="ml-1 mr-1 p-1 rounded"
+                    {repo.languages.nodes.map((lang: { name: string, color: string }, i: number) => (
+                      <h6
+                        key={i}
+                        className="ml-1 mr-1 p-1 rounded"
                         style={{
                           backgroundColor: lang.color ? lang.color : '#000000',
                           color: this.determineColor(lang.color, 'white', 'black')
@@ -85,24 +87,24 @@ class InfoPanel extends Component<InfoPanelProps, InfoPanelState> {
                   <h6><b>Last Updated: </b>{moment(repo.pushedAt).format(this.momentFormatString)}</h6>
                   <h6 style={{ marginTop: '2rem', textOverflow: 'ellipses', overflowX: 'hidden' }}>
                     <b>Last Commit: </b>
-                    { repo.object && repo.object.history.nodes.length 
-                      ? repo.object.history.nodes[0].message 
-                      : <i>N/A</i>}
+                    {repo.object && repo.object.history.nodes.length
+                      ? repo.object.history.nodes[0].message
+                      : <i>n/a</i>}
                   </h6>
                 </Col>
               </Row>
               <Row><Col>{i == this.props.data.user.repositories.nodes.length - 1 ? null : <hr />}</Col></Row>
-            </>
+            </div>
           );
         })}
       </ListGroup>
     );
 
     const accordionContents = [
-      { title: "Statistics", body: <Card.Body>Text1</Card.Body> },
-      { 
-        title: `Projects (${this.props.data.user.repositories.nodes.length})`, 
-        body: <Card.Body>{repos}</Card.Body> 
+      // { title: "Statistics", body: <Card.Body>Text1</Card.Body> },
+      {
+        title: `Projects (${this.props.data.user.repositories.nodes.length})`,
+        body: <Card.Body>{repos}</Card.Body>
       }
     ];
 

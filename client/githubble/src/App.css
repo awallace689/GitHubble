@@ -18,12 +18,6 @@
   --bootstrapGray: rgba(0,0,0,.03);
 }
 
-.page-navbar {
-  width: 100%;
-  background-color: var(--accentColor);
-  z-index: 99;
-}
-
 .scroll-me {
   overflow-y: auto;
   margin-top: 72px;
