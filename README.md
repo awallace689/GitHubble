@@ -18,7 +18,7 @@ Made with the MERN (MongoDB, Express.js, React.js, Node.js) stack and GraphQL!
 # Desktop Screenshots
 
 ## Landing Page
-Prompts user to authenticate GitHubble so that they can proceed to the website content. Stores authentication details in browser LocalStorage (Github OAuth tokens never expire).
+Prompts user to authenticate GitHubble so that they can proceed to the website content. Authentication details are stored in browser LocalStorage (Github OAuth tokens never expire).
 ![landingpage](./media/LandingPage.png)
 
 ## OAuth Redirect
@@ -30,7 +30,7 @@ Visual representation of the project routes.
 ![HomePage](./media/HomePage.png)
 
 ## Profile Page
-See a clean overview of any GitHub profile! The authenticated profile is shown be default.
+See a clean overview of any GitHub profile! The authenticated profile is shown by default.
 
 ![ProfilePage](./media/ProfilePage.png)
 
